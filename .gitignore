@@ -28,4 +28,5 @@ Thumbs.db
 instructions.pdf
 
 *.gz
+*.zip
 /hadoop-3.3.6/

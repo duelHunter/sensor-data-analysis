@@ -1,4 +1,4 @@
-# Large-Scale IoT Sensor Temperature Analysis Using Hadoop MapReduce
+# Large-Scale IoT Sensor Data Analysis Using Hadoop MapReduce
 
 This project computes **average sensor readings per sensor node (moteid)** from the Intel Berkeley Research Lab dataset using native Hadoop MapReduce in Java.
 

@@ -1,0 +1,88 @@
+﻿%&xelatex
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=1.6cm]{geometry}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fontspec}
+
+\setmainfont{Times New Roman}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue}
+\setlist[itemize]{noitemsep, topsep=2pt}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  columns=fullflexible,
+  frame=single,
+  breaklines=true,
+  showstringspaces=false,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray}
+}
+
+
+\begin{document}
+
+\begin{center}
+{\LARGE\textbf{Large-Scale IoT Sensor Data Analysis Using MapReduce}}\\[10pt]
+{\large EC7204 Cloud Computing | Take home Assignment | Hadoop Implementation}\\[6pt]
+{\normalsize Chathumal W.S (EG/2020/3867) | Rajakaruna R.H.M.K.M (EG/2020/4128)}\\[2pt]
+{\normalsize Senarathna G.M.L.D (EG/2020/4202) | Perera M.T.T.M (EG/2020/4351)}\\[10pt]
+\end{center}
+
+\section*{1. Dataset Selection}
+We used the Intel Berkeley Research Lab Sensor Dataset (\href{https://db.csail.mit.edu/labdata/labdata.html}{labdata.html}), which contains approximately \textbf{2.3 million} readings collected from \textbf{54} wireless sensor nodes (motes). Each row includes timestamp, mote id, and environmental measurements (temperature, humidity, light, voltage). This dataset is suitable for large-scale aggregation tasks and demonstrates a realistic IoT analytics workload. Our dataset/task selection was registered in the shared Google Sheet as required.
+
+\section*{2. MapReduce Task}
+\textbf{Goal:} Compute the average temperature, humidity, light, and voltage recorded by each sensor node (\texttt{moteid}).
+
+\textbf{Input schema (space separated):}
+\begin{lstlisting}
+<date> <time> <epoch> <moteid> <temperature> <humidity> <light> <voltage>
+\end{lstlisting}
+
+\section*{3. Approach (Hadoop Java API)}
+We implemented a \textbf{native Hadoop MapReduce} job in Java (no streaming). The design uses a Mapper, Combiner, Reducer, and Driver packaged as a JAR.
+
+\begin{itemize}
+  \item \textbf{Mapper:} parses each line, extracts \texttt{moteid} and the 4 numeric measurements, emits \texttt{(moteid, (sumT,sumH,sumL,sumV,count=1))}.
+  \item \textbf{Combiner:} aggregates partial sums and counts per mote to reduce shuffle size.
+  \item \textbf{Reducer:} totals sums and counts per mote, outputs tab-separated averages as: \texttt{moteid  avgT  avgH  avgL  avgV}.
+  \item \textbf{Custom Writable:} a multi-field Writable carries the 4 sums and count efficiently.
+\end{itemize}
+
+\section*{4. Results Summary \& Interpretation}
+The job produced \textbf{55} per-mote average records (one output line per mote id observed in the input) and reports four averages per mote: temperature, humidity, light, and voltage. Across motes, the average temperature ranged from \textbf{20.3633\,$^{\circ}$C} (mote 50) to \textbf{55.5074\,$^{\circ}$C} (mote 30). Average humidity ranged from \textbf{28.3893} to \textbf{41.1629}, and average light intensity ranged from \textbf{97.9053} to \textbf{793.2595}. Battery voltage averages were relatively stable, ranging from \textbf{2.3484} to \textbf{2.9000}.
+
+These aggregates help identify motes with unusual operating conditions (e.g., consistently high temperature or low voltage), which can indicate sensor placement effects, environmental hotspots, or potential device issues. The multi-metric output enables quick comparison of environmental patterns across nodes and supports downstream monitoring dashboards.
+
+\textbf{Sample output:}
+\begin{center}
+\footnotesize\ttfamily
+\begin{tabular}{|r|r|r|r|r|}
+\hline
+moteid & avgTemp & avgHumidity & avgLight & avgVoltage\\
+\hline
+1 & 35.8824 & 34.3193 & 156.5758 & 2.5196\\
+\hline
+2 & 40.2018 & 34.2987 & 212.1597 & 2.4584\\
+\hline
+3 & 33.7160 & 34.7879 & 146.0528 & 2.5180\\
+\hline
+4 & 45.4644 & 29.9912 & 155.4915 & 2.4682\\
+\hline
+6 & 27.5616 & 28.5136 & 453.1141 & 2.4283\\
+\hline
+7 & 41.9379 & 32.1308 & 134.1545 & 2.5019\\
+\hline
+\end{tabular}
+\end{center}
+
+\end{document}
+
+
+
