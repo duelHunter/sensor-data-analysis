@@ -2,8 +2,8 @@ package com.takehome.iot;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -16,7 +16,7 @@ public class TemperatureAvgDriver {
         }
 
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "iot-temperature-average");
+        Job job = Job.getInstance(conf, "iot-sensor-averages");
         job.setJarByClass(TemperatureAvgDriver.class);
 
         job.setMapperClass(TemperatureAvgMapper.class);
@@ -24,12 +24,9 @@ public class TemperatureAvgDriver {
         job.setReducerClass(TemperatureAvgReducer.class);
 
         job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(SumCountWritable.class);
+        job.setMapOutputValueClass(MetricsSumCountWritable.class);
         job.setOutputKeyClass(IntWritable.class);
-        job.setOutputValueClass(DoubleWritable.class);
-
-        job.setInputFormatClass(org.apache.hadoop.mapreduce.lib.input.TextInputFormat.class);
-        job.setOutputFormatClass(org.apache.hadoop.mapreduce.lib.output.TextOutputFormat.class);
+        job.setOutputValueClass(Text.class);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));

@@ -7,9 +7,9 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class TemperatureAvgMapper extends Mapper<LongWritable, Text, IntWritable, SumCountWritable> {
+public class TemperatureAvgMapper extends Mapper<LongWritable, Text, IntWritable, MetricsSumCountWritable> {
     private final IntWritable outKey = new IntWritable();
-    private final SumCountWritable outValue = new SumCountWritable();
+    private final MetricsSumCountWritable outValue = new MetricsSumCountWritable();
 
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -26,9 +26,12 @@ public class TemperatureAvgMapper extends Mapper<LongWritable, Text, IntWritable
         try {
             int moteId = Integer.parseInt(parts[3]);
             double temperature = Double.parseDouble(parts[4]);
+            double humidity = Double.parseDouble(parts[5]);
+            double light = Double.parseDouble(parts[6]);
+            double voltage = Double.parseDouble(parts[7]);
 
             outKey.set(moteId);
-            outValue.set(temperature, 1L);
+            outValue.set(temperature, humidity, light, voltage, 1L);
             context.write(outKey, outValue);
         } catch (NumberFormatException ex) {
             // Skip malformed lines.

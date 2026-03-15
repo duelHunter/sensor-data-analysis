@@ -1,6 +1,6 @@
 # Large-Scale IoT Sensor Temperature Analysis Using Hadoop MapReduce
 
-This project computes the average temperature per sensor node (moteid) from the Intel Berkeley Research Lab dataset using native Hadoop MapReduce in Java.
+This project computes **average sensor readings per sensor node (moteid)** from the Intel Berkeley Research Lab dataset using native Hadoop MapReduce in Java.
 
 ## Dataset
 Source: https://db.csail.mit.edu/labdata/labdata.html
@@ -28,20 +28,21 @@ hadoop fs -put data.txt/data.txt /datasets/iot/
 
 hadoop jar target/iot-temp-avg-1.0.0.jar \
   /datasets/iot/data.txt \
-  /outputs/iot-temp-avg
+  /outputs/iot-sensor-avgs
 ```
 
 Check output:
 ```
-hadoop fs -cat /outputs/iot-temp-avg/part-r-00000 | head -n 10
+hadoop fs -cat /outputs/iot-sensor-avgs/part-r-00000 | head -n 10
 ```
 
 ## Output
 Each output line is:
 ```
-<moteid> <average_temperature>
+<moteid> <avg_temperature> <avg_humidity> <avg_light> <avg_voltage>
 ```
+(Tab-separated)
 
 ## Notes
 - Mapper, Reducer, and Driver are implemented with the Hadoop Java API.
-- A custom Writable (`SumCountWritable`) is used to aggregate sum and count.
+- A custom Writable (`MetricsSumCountWritable`) is used to aggregate sums and count.
